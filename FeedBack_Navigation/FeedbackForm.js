@@ -1,178 +1,150 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  Button,
-  StyleSheet,
-  Alert,
-  ScrollView,
-} from 'react-native';
-
+import React from 'react';
+import { View, Text, TextInput, Button, StyleSheet, ScrollView } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import { Formik } from 'formik';
+import * as Yup from 'yup';
 
-{/* <Picker
-selectedValue={itemValue}
-onValueChange={(value, index) => setItemValue(value)}
->
-<Picker.Item label="Option A" value="A" />
-<Picker.Item label="Option B" value="B" />
-</Picker> */}
+const feedbackSchema = Yup.object().shape({
+  name: Yup.string().required('Name is required'),
+  email: Yup.string().email('Invalid email').required('Email is required'),
+  course: Yup.string().required('Please select a course'),
+  rating: Yup.string().required('Rating is required'),
+});
 
-
-const courses = ['React Native', 'Angular', 'Vue', 'Node.js'];
-
-export default function FeedbackForm({ navigation }) {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [course, setCourse] = useState('');
-  const [rate, setRate] = useState('5');
-
-  const [errors, setErrors] = useState({});
-
-  const validateEmail = (email) => {
-    // Simple regex for email validation
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(String(email).toLowerCase());
-  };
-
-  const validate = () => {
-    let tempErrors = {};
-    if (!name.trim()) tempErrors.name = 'Name is required';
-    if (!email.trim()) tempErrors.email = 'Email is required';
-    else if (!validateEmail(email)) tempErrors.email = 'Email is invalid';
-
-    if (!course) tempErrors.course = 'Please select a course';
-
-    const rateNum = parseInt(rate);
-    if (isNaN(rateNum) || rateNum < 1 || rateNum > 10) {
-      tempErrors.rate = 'Rate must be between 1 and 10';
-    }
-
-    setErrors(tempErrors);
-
-    return Object.keys(tempErrors).length === 0;
-  };
-
-  const onSubmit = () => {
-    if (validate()) {
-      // You can handle your form data here (e.g., send to server)
-      console.log({ name, email, course, rate });
-      navigation.navigate('ThankYou');
-    } else {
-      Alert.alert('Validation failed', 'Please fix the errors before submitting.');
-    }
-  };
-
-  const onClear = () => {
-    setName('');
-    setEmail('');
-    setCourse('');
-    setRate('5');
-    setErrors({});
-  };
-
+export default function FeedbackFormScreen({ navigation }) {
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.field}>
-        <Text>Name:</Text>
-        <TextInput
-          style={[styles.input, errors.name && styles.errorBorder]}
-          value={name}
-          onChangeText={setName}
-          placeholder="Enter your name"
-        />
-        {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
-      </View>
+      <Text style={styles.heading}>Event Feedback Form</Text>
 
-      <View style={styles.field}>
-        <Text>Email:</Text>
-        <TextInput
-          style={[styles.input, errors.email && styles.errorBorder]}
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          placeholder="Enter your email"
-          autoCapitalize="none"
-        />
-        {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
-      </View>
+      <Formik
+        initialValues={{ name: '', email: '', course: '', rating: '' }}
+        validationSchema={feedbackSchema}
+        onSubmit={(values, { resetForm }) => {
+          resetForm();
+          navigation.navigate('ThankYou', { feedback: values });
+        }}
+      >
+        {({ handleChange, handleSubmit, setFieldValue, values, errors, touched, resetForm }) => (
+          <View style={styles.formContainer}>
+            {/* Name */}
+            <TextInput
+              style={[styles.input, touched.name && errors.name && styles.errorBorder]}
+              placeholder="Enter your name"
+              value={values.name}
+              onChangeText={handleChange('name')}
+            />
+            {touched.name && errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
 
-      <View style={styles.field}>
-        <Text>Course:</Text>
-        <View
-          style={[
-            styles.pickerContainer,
-            errors.course && styles.errorBorder,
-          ]}
-        >
-          <Picker
-            selectedValue={course}
-            onValueChange={(itemValue) => setCourse(itemValue)}
-          >
-            <Picker.Item label="-- Select Course --" value="" />
-            {courses.map((c, idx) => (
-              <Picker.Item key={idx} label={c} value={c} />
-            ))}
-          </Picker>
-        </View>
-        {errors.course && <Text style={styles.errorText}>{errors.course}</Text>}
-      </View>
+            {/* Email */}
+            <TextInput
+              style={[styles.input, touched.email && errors.email && styles.errorBorder]}
+              placeholder="Enter your email"
+              value={values.email}
+              onChangeText={handleChange('email')}
+              keyboardType="email-address"
+            />
+            {touched.email && errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
 
-      <View style={styles.field}>
-        <Text>Rate your learning experience: {rate}</Text>
-        <TextInput
-          style={[styles.input, errors.rate && styles.errorBorder]}
-          value={rate}
-          onChangeText={(text) => {
-            // allow only numbers between 1 and 10
-            if (/^\d*$/.test(text)) setRate(text);
-          }}
-          keyboardType="numeric"
-          placeholder="1 to 10"
-          maxLength={2}
-        />
-        {errors.rate && <Text style={styles.errorText}>{errors.rate}</Text>}
-      </View>
+            {/* Course Dropdown */}
+            <Text style={styles.label}>Select Course:</Text>
+            <Picker
+              selectedValue={values.course}
+              onValueChange={(itemValue) => setFieldValue('course', itemValue)}
+              style={[styles.picker, touched.course && errors.course && styles.errorBorder]}
+            >
+              <Picker.Item label="Select course..." value="" />
+              <Picker.Item label="React Native" value="React Native" />
+              <Picker.Item label="Data Science" value="Data Science" />
+              <Picker.Item label="AI & ML" value="AI & ML" />
+            </Picker>
+            {touched.course && errors.course && <Text style={styles.errorText}>{errors.course}</Text>}
 
-      <View style={styles.buttons}>
-        <Button title="Submit" onPress={onSubmit} />
-        <View style={{ width: 10 }} />
-        <Button title="Clear" color="gray" onPress={onClear} />
-      </View>
+            {/* Rating Dropdown */}
+            <Text style={styles.label}>Rate your learning experience (1-5):</Text>
+            <Picker
+              selectedValue={values.rating}
+              onValueChange={(itemValue) => setFieldValue('rating', itemValue)}
+              style={[styles.picker, touched.rating && errors.rating && styles.errorBorder]}
+            >
+              <Picker.Item label="Select rating..." value="" />
+              <Picker.Item label="1 - Poor" value="1" />
+              <Picker.Item label="2 - Fair" value="2" />
+              <Picker.Item label="3 - Good" value="3" />
+              <Picker.Item label="4 - Very Good" value="4" />
+              <Picker.Item label="5 - Excellent" value="5" />
+            </Picker>
+            {touched.rating && errors.rating && <Text style={styles.errorText}>{errors.rating}</Text>}
+
+            {/* Buttons */}
+            <View style={styles.buttonContainer}>
+              <Button title="Submit" onPress={handleSubmit} color="#4CAF50" />
+              <View style={styles.buttonSpacer} />
+              <Button title="Clear" onPress={() => resetForm()} color="gray" />
+            </View>
+          </View>
+        )}
+      </Formik>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     padding: 20,
+    backgroundColor: '#F0F0F0', // Light background color
   },
-  field: {
+  heading: {
+    fontSize: 24,
     marginBottom: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    textAlign: 'center',
+  },
+  formContainer: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 5,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#777',
-    padding: 8,
-    marginTop: 5,
-    borderRadius: 4,
+    borderColor: '#ddd',
+    padding: 12,
+    marginVertical: 10,
+    borderRadius: 8,
+    backgroundColor: '#FAFAFA',
+    fontSize: 16,
   },
-  pickerContainer: {
+  picker: {
     borderWidth: 1,
-    borderColor: '#777',
-    borderRadius: 4,
-    marginTop: 5,
+    borderColor: '#ddd',
+    marginVertical: 10,
+    borderRadius: 8,
+    backgroundColor: '#FAFAFA',
   },
-  buttons: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
+  label: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
   },
   errorText: {
     color: 'red',
-    marginTop: 3,
+    fontSize: 12,
   },
   errorBorder: {
     borderColor: 'red',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+  },
+  buttonSpacer: {
+    width: 10,
   },
 });
