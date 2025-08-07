@@ -1,100 +1,63 @@
-import React, { Component } from 'react';
-import { AppRegistry, View, Text, StyleSheet, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 
-export default class Clock extends Component {
+const daysArray = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
 
-  constructor() {
-    super();
+export default function Clock() {
+  const [currentTime, setCurrentTime] = useState('');
+  const [currentDay, setCurrentDay] = useState('');
 
-    this.state = { currentTime: null, currentDay: null }
-    this.daysArray = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-  }
+  useEffect(() => {
+    const updateClock = () => {
+      const now = new Date();
+      let hour = now.getHours();
+      let minutes = now.getMinutes();
+      let seconds = now.getSeconds();
+      let am_pm = hour >= 12 ? 'PM' : 'AM';
 
-  componentWillMount() {
-    this.getCurrentTime();
-  }
+      // Convert to 12-hour format
+      if (hour > 12) hour -= 12;
+      if (hour === 0) hour = 12;
 
-  getCurrentTime = () => {
-    let hour = new Date().getHours();
-    let minutes = new Date().getMinutes();
-    let seconds = new Date().getSeconds();
-    let am_pm = 'pm';
+      // Add leading zero
+      minutes = minutes < 10 ? '0' + minutes : minutes;
+      seconds = seconds < 10 ? '0' + seconds : seconds;
 
-    if (minutes < 10) {
-      minutes = '0' + minutes;
-    }
+      const timeString = `${hour}:${minutes}:${seconds} ${am_pm}`;
+      const dayString = daysArray[now.getDay()];
 
-    if (seconds < 10) {
-      seconds = '0' + seconds;
-    }
+      setCurrentTime(timeString);
+      setCurrentDay(dayString);
+    };
 
-    if (hour > 12) {
-      hour = hour - 12;
-    }
+    updateClock(); // Call once immediately
+    const timerId = setInterval(updateClock, 1000);
 
-    if (hour == 0) {
-      hour = 12;
-    }
+    return () => clearInterval(timerId); // Cleanup on unmount
+  }, []);
 
-    if (new Date().getHours() < 12) {
-      am_pm = 'am';
-    }
-
-    this.setState({ currentTime: hour + ':' + minutes + ':' + seconds + ' ' + am_pm });
-
-    this.daysArray.map((item, key) => {
-      if (key == new Date().getDay()) {
-        this.setState({ currentDay: item.toUpperCase() });
-      }
-    })
-  }
-
-  componentWillUnmount() {
-    clearInterval(this.timer);
-  }
-
-  componentDidMount() {
-    this.timer = setInterval(() => {
-      this.getCurrentTime();
-    }, 1000);
-  }
-
-  render() {
-
-    return (
-      <View style={styles.container}>
-        <View>
-          <Text style={styles.daysText}>{this.state.currentDay}</Text>
-          <Text style={styles.timeText}>{this.state.currentTime}</Text>
-        </View>
-      </View>
-    );
-  }
+  return (
+    <View style={styles.container}>
+      <Text style={styles.daysText}>{currentDay}</Text>
+      <Text style={styles.timeText}>{currentTime}</Text>
+    </View>
+  );
 }
 
-const styles = StyleSheet.create(
-  {
-    container: {
-      flex: 1,
-      paddingTop: (Platform.OS === 'ios') ? 20 : 0,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    headerText: {
-      fontSize: 30,
-      textAlign: "center",
-      margin: 10,
-      color: 'black',
-      fontWeight: "bold"
-    },
-    timeText: {
-      fontSize: 50,
-      color: '#f44336'
-    },
-    daysText: {
-      color: '#2196f3',
-      fontSize: 25,
-      paddingBottom: 0
-    }
-
-  });
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingTop: Platform.OS === 'ios' ? 20 : 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  timeText: {
+    fontSize: 50,
+    color: '#f44336',
+  },
+  daysText: {
+    color: '#2196f3',
+    fontSize: 25,
+    paddingBottom: 0,
+  },
+});
