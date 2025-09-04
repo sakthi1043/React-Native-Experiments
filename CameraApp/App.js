@@ -199,7 +199,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F0F0F0', // Light background for a refreshing look
+    backgroundColor: '#F0F0F0', 
   },
   content: {
     flex: 1,
@@ -208,20 +208,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   text: {
-    color: '#333', // Dark text for better readability
+    color: '#333', 
     fontSize: 18,
     textAlign: 'center',
     marginBottom: 20,
   },
   title: {
-    color: '#00796B', // Calming green for titles
+    color: '#00796B', 
     fontSize: 34,
     fontWeight: '700',
     marginBottom: 12,
     textAlign: 'center',
   },
   subtitle: {
-    color: '#607D8B', // Subtle grayish blue for subtitle
+    color: '#607D8B',
     fontSize: 16,
     marginBottom: 40,
     textAlign: 'center',
@@ -246,15 +246,15 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 30,
     marginHorizontal: 12,
-    backgroundColor: '#ffffff', // Clean white background for options
+    backgroundColor: '#ffffff', 
     borderRadius: 35,
     minWidth: 100,
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 4, // Subtle shadow for depth
+    elevation: 4,
   },
   selectedFilter: {
-    backgroundColor: '#00796B', // Accent color for selected filters
+    backgroundColor: '#00796B', 
     borderWidth: 2,
     borderColor: '#FFF',
   },
