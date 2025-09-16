@@ -6,7 +6,7 @@ export default function App() {
   return (
     <View style={styles.container}>
       <Music/>
-      <Text>Hello</Text>
+      {/* <Text>Hello</Text> */}
     </View>
   );
 }
